@@ -1,230 +1,303 @@
 # Mookie The Music Playa
 
-A self-hosted Discord music bot. Play uploaded audio, supported music links, or song searches in your server's voice channels. Optional Fish Audio integration generates downloadable voice tags.
+Mookie plays music in a Discord voice channel. You can upload a song, paste a music link, or search for a song by name.
 
-Installing this project runs your own copy of Mookie using your own Discord bot account. It does not give you access to the owner's bot token. Your computer must stay on and the bot process must remain running.
+**You do not need to know how to code.** You will need to install a few tools, create your own Discord bot, and copy some commands. Follow one step at a time.
+
+This runs your own copy of Mookie on your computer. Your computer needs to stay on, connected to the internet, and awake while Mookie is playing.
 
 ## Before you start
 
-- Access to this private GitHub repository: the owner must invite you as a collaborator and you must accept.
-- A Discord account and a server where you can install apps.
-- Python 3.11 or newer, Git, FFmpeg, and Deno 2.3 or newer.
-- Your own Discord bot token, created below.
+You need a Mac or Windows computer, a Discord account, and a Discord server where you can add bots. You also need a GitHub account with access to this repository. Since it is private, ask the owner to invite you and accept that invitation first.
 
-FFmpeg decodes audio; Deno supports YouTube's JavaScript challenges. See the [yt-dlp runtime guide](https://github.com/yt-dlp/yt-dlp/wiki/EJS).
+**Just want to listen?** If someone already runs Mookie in your server, you do not need to install anything. Join a voice channel and use `/play` in a text channel.
 
-## 1. Download Mookie
+## Step 1: Download the files
 
-Open Terminal (Mac/Linux) or PowerShell (Windows). Navigate to a local folder where you keep projects, then run:
+1. Sign into GitHub and open [Mookie's repository](https://github.com/thizzclinton/MookieTheMusicPlaya).
+2. Click the green **Code** button above the file list.
+3. Click **Download ZIP**.
+4. Open your Downloads folder.
+5. On Mac, double-click the ZIP. On Windows, right-click it, choose **Extract All**, and click **Extract**.
+6. Open the extracted folder. You should see `bot.py`, `README.md`, and `requirements.txt`. If you only see another folder, open that folder too.
+7. Rename the folder containing those files to **Mookie**.
+8. Move that folder into your personal home folder. On Mac, open Finder and press **Shift + Command + H** to get there. On Windows, press **Windows + R**, type `%USERPROFILE%`, and press Enter to open it.
+
+Use a local folder rather than iCloud or OneDrive. The rest of this guide assumes the folder is named `Mookie` and is directly inside your home folder.
+
+## Step 2: Open the command window
+
+This is where you paste the commands below. A command is just an instruction for your computer.
+
+**Mac:** Press **Command + Space**, type `Terminal`, and press Enter.
+
+**Windows:** Open Start, type `PowerShell`, and open **Windows PowerShell**.
+
+For each command: copy it, paste it into that window, and press Enter. Do not copy the surrounding box or any text outside it. Wait until your normal typing prompt returns before entering the next command. Some commands show lots of text; that is normal. If you see an error, stop at that step and check the help section below.
+
+## Step 3: Install the tools Mookie needs
+
+### If you use a Mac
+
+First check whether Homebrew is installed. Homebrew downloads the tools for you.
 
 ```sh
-git clone https://github.com/thizzclinton/MookieTheMusicPlaya.git
-cd MookieTheMusicPlaya
+brew --version
 ```
 
-For this private repository, use authenticated Git. If you have GitHub CLI installed, run `gh auth login` and `gh auth setup-git` first. Alternatively, use GitHub Desktop to clone it. A GitHub account password will not authenticate an HTTPS Git clone.
+If you see a version number, continue below. If you see `command not found`, open [brew.sh](https://brew.sh), copy the command under **Install Homebrew**, and paste it into Terminal. Follow its prompts. If asked for your Mac password, type it and press Enter; no dots or letters will appear while you type. At the end, follow the installer's **Next steps** instructions, then run `brew --version` again.
 
-Keep the project in a local, non-cloud-synced folder to avoid dependencies being offloaded.
-
-## 2. Install system requirements
-
-### macOS
-
-Install [Homebrew](https://brew.sh/) if you do not have it, then run:
+Now install the tools:
 
 ```sh
-brew install python ffmpeg deno git
+brew install python ffmpeg deno
+```
+
+Wait for the normal prompt to return. This can take several minutes. Then run these checks, one at a time:
+
+```sh
 python3 --version
+```
+
+```sh
 ffmpeg -version
+```
+
+```sh
 deno --version
+```
+
+Each should print version information. Python needs to be 3.11 or newer and Deno needs to be 2.3 or newer. FFmpeg handles audio; Deno helps Mookie play YouTube tracks. These requirements follow the [yt-dlp setup guide](https://github.com/yt-dlp/yt-dlp/wiki/EJS).
+
+### If you use Windows
+
+1. Install Python 3.11 or newer from [python.org](https://www.python.org/downloads/windows/). If the installer offers **Add Python to PATH**, check it.
+2. Install FFmpeg using the Windows builds linked from [FFmpeg's download page](https://ffmpeg.org/download.html). Extract the downloaded archive. Open its `bin` folder; this is the folder containing `ffmpeg.exe`.
+3. Copy that folder's full address from File Explorer's address bar. Open Start, search **Edit environment variables for your account**, and open it. Under your user variables, select **Path → Edit → New**. Paste the folder address and click **OK** on each window. This lets Mookie find FFmpeg.
+4. Install Deno by following the **Windows** instructions on [Deno's installation page](https://docs.deno.com/runtime/getting_started/installation/).
+5. Close PowerShell and open it again so it sees the installed tools.
+6. Run these checks one at a time:
+
+```powershell
+py -3 --version
+```
+
+```powershell
+ffmpeg -version
+```
+
+```powershell
+deno --version
+```
+
+Each should print version information. If one is not recognized, finish installing that tool before continuing. Python must be 3.11 or newer; Deno must be 2.3 or newer.
+
+## Step 4: Set up Mookie's folder
+
+Choose the commands for your computer. Paste **one line at a time** and wait for it to finish.
+
+### Mac
+
+```sh
+cd ~/Mookie
+```
+
+Check the folder:
+
+```sh
+ls
+```
+
+You should see `bot.py` and `requirements.txt`. If you do, continue:
+
+```sh
+python3 -m venv .venv
+```
+
+```sh
+.venv/bin/python -m pip install --upgrade pip
+```
+
+```sh
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+```sh
+cp .env.example .env
 ```
 
 ### Windows
 
-Install Python 3.11 or newer from [python.org](https://www.python.org/downloads/windows/) (enable its PATH option), [Git](https://git-scm.com/downloads), [FFmpeg](https://ffmpeg.org/download.html), and [Deno](https://docs.deno.com/runtime/getting_started/installation/). Ensure FFmpeg and Deno are on your PATH. Reopen PowerShell and check:
+```powershell
+cd "$env:USERPROFILE\Mookie"
+```
+
+Check the folder:
 
 ```powershell
-py -3 --version
-git --version
-ffmpeg -version
-deno --version
+dir
 ```
 
-### Linux (Debian/Ubuntu)
-
-```sh
-sudo apt update
-sudo apt install python3 python3-venv python3-pip ffmpeg git
-```
-
-Install Deno using its [official installation instructions](https://docs.deno.com/runtime/getting_started/installation/). Check `python3 --version` is at least 3.11, and check `ffmpeg -version` and `deno --version`.
-
-## 3. Install Python dependencies
-
-Run these commands from inside `MookieTheMusicPlaya`.
-
-**Mac/Linux:**
-
-```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -r requirements.txt
-cp .env.example .env
-```
-
-**Windows PowerShell:**
+You should see `bot.py` and `requirements.txt`. If you do, continue:
 
 ```powershell
 py -3 -m venv .venv
+```
+
+```powershell
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
+```
+
+```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+```powershell
 Copy-Item .env.example .env
 ```
 
-These commands use the virtual environment directly; no activation or PowerShell execution-policy changes are necessary. Copy the environment example only during first-time setup so you don't overwrite existing credentials.
+This creates Mookie's own Python tools and a settings file. You only do this step once. **Do not repeat the last copy command after adding your token**; it would replace your settings.
 
-## 4. Create and invite your Discord bot
+## Step 5: Create your bot in Discord
 
-1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Create a new application named Mookie (or any name you prefer).
-3. Open **Bot**, generate/reset its token, and save it privately. Leave privileged intents off; this bot uses slash commands and explicitly selected messages.
-4. Under **OAuth2 → URL Generator**, select **bot** and **applications.commands**.
-5. Select **View Channels**, **Send Messages**, **Read Message History**, **Connect**, and **Speak**. Administrator permission is unnecessary.
-6. Open the generated installation URL and choose your server. Make sure channel overrides also allow Connect and Speak.
-7. Optionally enable **Developer Mode** in Discord's advanced settings, right-click your server, and copy its ID for quicker command registration in that server.
+1. Open the [Discord Developer Portal](https://discord.com/developers/applications) and sign in with Discord.
+2. Click **New Application**, name it `Mookie`, and complete the creation prompts.
+3. Click **Bot** in the left menu.
+4. Find the token section and click **Reset Token** or the available token-generation button. Complete Discord's verification if asked.
+5. Copy the token. It is a secret password for your bot. You will paste it into your local settings file in the next step. Do not send it to anyone or include it in screenshots.
+6. Leave the **Privileged Gateway Intents** switches off.
 
-Discord's [bot setup guide](https://docs.discord.com/developers/quick-start/getting-started) provides additional portal guidance.
+Now invite the bot:
 
-## 5. Configure your local token
+1. Click **OAuth2**, then find **URL Generator**.
+2. Under **Scopes**, check **bot** and **applications.commands**.
+3. Under **Bot Permissions**, check **View Channels**, **Send Messages**, **Read Message History**, **Connect**, and **Speak**.
+4. Copy the generated link and open it in your browser.
+5. Choose your server and finish the authorization prompts.
 
-Open the `.env` file in a text editor. On Mac you can use `open -e .env`; on Windows use `notepad .env`.
+Mookie should appear in the server's member list. It can be offline for now; you haven't started it yet. If your server isn't listed, ask someone with permission to manage that server to install the bot.
 
-```dotenv
-DISCORD_TOKEN=your_own_bot_token
-DISCORD_GUILD_ID=
-```
+If Discord moves a button, its [official bot guide](https://docs.discord.com/developers/quick-start/getting-started) has more setup help.
 
-Put the optional server ID after `DISCORD_GUILD_ID=`. Save the file. Never share your token or commit `.env` to Git; it is ignored by this repository. If a token is exposed, reset it in the Developer Portal and update your local file.
+## Step 6: Add the bot's secret token
 
-## 6. Start and verify
+Go back to your command window. Open the settings file with the command for your computer.
 
-**Mac/Linux:**
+Mac:
 
 ```sh
-.venv/bin/python bot.py
+open -e .env
 ```
 
-**Windows PowerShell:**
+Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe bot.py
+notepad .env
 ```
 
-Wait for the `Logged in as ... Commands are ready.` message. Keep this terminal open. On Mac, you can prevent idle sleep while running with:
+Find this line:
+
+```dotenv
+DISCORD_TOKEN=paste_your_bot_token_here
+```
+
+Replace **only** `paste_your_bot_token_here` with the token you copied from Discord. Keep `DISCORD_TOKEN=` at the beginning. Do not add quotation marks or spaces.
+
+Save with **Command + S** on Mac or **Ctrl + S** on Windows, then close the editor. Leave the other settings alone for now. Fish Audio settings are optional and aren't needed for music.
+
+If you accidentally share your token, reset it in Discord and replace it here.
+
+## Step 7: Turn Mookie on
+
+Mac:
 
 ```sh
 caffeinate -i .venv/bin/python bot.py
 ```
 
-Then check real playback:
-
-1. Join a regular Discord voice channel.
-2. Use `/play file:` and upload a small MP3.
-3. Confirm Mookie joins and you can hear it.
-4. Try `/pause`, `/resume`, and `/stop`.
-5. Try `/play query:` with a song title or a specific YouTube URL.
-
-You can also right-click an uploaded audio message and choose **Apps → Play attachment** (long-press on mobile).
-
-Press Ctrl+C in the terminal to stop. To start next time, enter the project folder and run the same start command. Don't run two copies with the same token. For continuous availability, use an always-on computer or server; this repository does not set up hosting automatically.
-
-## Updating
-
-Stop Mookie with Ctrl+C, then run these commands inside the project folder:
-
-```sh
-git pull --ff-only
-```
-
-Mac/Linux:
-
-```sh
-.venv/bin/python -m pip install --upgrade -r requirements.txt
-.venv/bin/python bot.py
-```
-
-Windows PowerShell:
+Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install --upgrade -r requirements.txt
 .\.venv\Scripts\python.exe bot.py
 ```
 
-Your `.env` remains local. If you made code changes, save or commit them before pulling updates.
+Wait for a message like:
 
-## Commands
+```text
+Logged in as Mookie... Commands are ready.
+```
 
-| Command | Action |
+Mookie should now appear online in Discord. **Leave this window open.** It will not return to the typing prompt while the bot is running; that is expected. On Mac, `caffeinate` prevents idle sleep while this command runs. On Windows, make sure your computer's sleep settings allow it to stay awake while you use Mookie.
+
+## Step 8: Play your first song
+
+1. Open Discord and join a normal voice channel, such as General.
+2. Open a text channel in the same server.
+3. Type `/play` and choose Mookie's command from Discord's suggestions.
+4. Choose the **file** option and upload a small MP3, then send the command.
+5. Mookie should join your voice channel and play it.
+
+To search instead, choose the **query** option and type a song and artist, or paste a YouTube link. Choose either **file** or **query** for each request.
+
+Try these controls in a text channel:
+
+| Type this | What it does |
 | --- | --- |
-| Message → Apps → Play attachment | Queue the first supported audio attachment in an existing message |
-| `/play file:` | Upload and queue an audio file |
-| `/play query:` | Queue a music URL or the first YouTube search match |
-| `/queue` | Show current filename and waiting track count |
-| `/pause` / `/resume` | Control current playback |
-| `/skip` | Skip current track, including a pending online lookup |
-| `/stop` | Clear queued files and disconnect |
+| `/queue` | Shows the current song and waiting songs |
+| `/pause` | Pauses the song |
+| `/resume` | Continues playing |
+| `/skip` | Moves to the next song |
+| `/stop` | Clears the music queue and leaves the voice channel |
 
-Anyone in the bot's voice channel can control it. Each server has an independent queue. The bot stays connected when the queue ends; use `/stop` to disconnect. It supports regular voice channels, not Stage channels.
+You can also right-click a message with an uploaded song and choose **Apps → Play attachment**. Anyone in Mookie's voice channel can use the playback controls.
 
-## Limits and troubleshooting
+## Turning it off and starting it next time
 
-- Online playback uses yt-dlp and streams through FFmpeg. Tested with a public MP3 link and a YouTube song search. Other supported sites, including SoundCloud, may depend on regional availability or site restrictions.
-- Spotify/Apple Music subscription streaming, login-required content, live streams, and full-playlist queuing are not supported. A playlist URL selects at most its first item; a video URL containing a playlist plays that video.
-- Search plays the first YouTube match automatically. Use a specific track URL if you want a particular version.
-- Tracks are resolved when their turn comes, so queued stream links do not expire while waiting. Lookup has a 90-second timeout and can be cancelled with `/skip` or `/stop`. Errors appear in the text channel where the track was requested; the queue then continues.
-- If a music site stops working, update with `python -m pip install --upgrade "yt-dlp[default]"`, restart, and retry. Some site blocks cannot be fixed by updating.
-- Accepted extensions: MP3, WAV, FLAC, OGG, Opus, M4A, AAC, WebM. Files must actually contain decodable audio.
-- Maximum 100 MiB per uploaded file, 20 waiting tracks per server, and four hours of playback per track. Discord's own upload limit still applies.
-- Files are downloaded to a temporary folder at queue time and removed after playback, skip, stop, or graceful shutdown. Forced termination can leave temporary files in the OS temp directory. Queues do not persist across restarts.
-- Missing commands: check installation scopes, server ID, bot startup logs, and restart Discord. Global commands may take time to propagate.
-- Bot joins but is silent: confirm Speak permission, that it isn't server-muted, and that FFmpeg is installed. Test with a normal MP3. Invalid audio can end immediately; inspect Terminal for FFmpeg errors.
-- Voice connection lost: use `/stop` and queue the file again.
-- Voice dependency errors: recreate the virtual environment and reinstall requirements. The pinned discord.py version includes support for Discord's DAVE voice encryption through the voice extras.
+To shut the bot down, click its command window and press **Ctrl + C**. `/stop` only disconnects it from voice; Ctrl+C shuts the program down.
 
-## Implementation references
+Next time, open Terminal or PowerShell and run these two commands:
 
-- Online media resolver: https://github.com/yt-dlp/yt-dlp
-- YouTube JS runtime setup: https://github.com/yt-dlp/yt-dlp/wiki/EJS
-- discord.py: https://github.com/Rapptz/discord.py
-- DAVE support: https://github.com/Rapptz/discord.py/blob/master/docs/whats_new.rst
-- Selected-message content exception: https://github.com/discord/discord-api-docs/blob/main/developers/events/gateway.mdx
-- Expiring attachment URLs: https://github.com/discord/discord-api-docs/blob/main/developers/reference.mdx
-
-Live server playback requires your own bot token and server. Local tests cannot verify Discord permissions or hear the resulting voice stream.
-
-## Local verification
-
-Runtime logs are written to `logs/mookie.log` and rotated automatically. Logging runs
-on a background thread so a slow terminal cannot block Discord's heartbeat or slash commands.
-To see connection and playback details, run `tail -f logs/mookie.log` in another terminal.
-
-Mac/Linux:
+Mac:
 
 ```sh
-.venv/bin/python -m unittest -v test_bot.py test_fish_tts.py test_runtime.py
+cd ~/Mookie
+caffeinate -i .venv/bin/python bot.py
 ```
 
-Windows PowerShell:
+Windows:
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest -v test_bot.py test_fish_tts.py test_runtime.py
+cd "$env:USERPROFILE\Mookie"
+.\.venv\Scripts\python.exe bot.py
 ```
 
-Offline tests cover command registration, FFmpeg Opus output, queue advancement, cleanup, mixed online/upload playback, cancellation during lookup, input validation, and subprocess cancellation. A new installation still needs the live playback check described above. These tests do not prove playback on every operating system or network.
+You do not need to install everything again. Run only one copy of the bot at a time.
 
-## Fish Audio voice tags
-Set `FISH_API_KEY` and `FISH_VOICE_ID` in `.env`, then restart the bot.
-Use `/tag text: Thizz Clinton. Turn the bass up.` to receive a private downloadable MP3.
-No voice-channel connection is required. Limit: 500 characters, one request per user per server every 30 seconds.
-The default model is `s2.1-pro-free`; optionally set `FISH_TTS_MODEL` to another supported Fish model. Provider access and pricing can change; check your Fish Audio account before using this feature.
-This does not implement Spotify support. Credentials alone do not enable it.
+## Stuck? Start here
+
+| What you see | What to do |
+| --- | --- |
+| GitHub says 404 or you can't see the files | Sign into the invited GitHub account and accept the owner's repository invitation. |
+| `No such file or directory` or `can't open file` | Your command window is in the wrong folder. Repeat the `cd` command in Step 4 and check that `bot.py` appears with `ls` or `dir`. |
+| `command not found` or `not recognized` | A tool isn't installed or your command window can't find it. Return to Step 3 and repeat the version check for that tool. |
+| `No module named ...` | Repeat the requirements installation command in Step 4, then use the exact start command in Step 7. |
+| Message asks for a token | Check that `.env` was saved inside Mookie's folder and that you replaced the placeholder. |
+| Token/login error | Reset the bot token in Discord, update `.env`, save, and restart. |
+| Bot is online but `/play` doesn't appear | Reopen Discord and wait for global commands to appear. Check that you invited it with both scopes in Step 5. |
+| Bot can't join or you hear nothing | Check its Connect and Speak permissions for that specific voice channel, make sure it isn't muted, and test a small MP3. |
+| An online song fails | Test an uploaded MP3 first. A music website may block access even when Mookie is installed correctly. |
+
+For quicker command registration: in Discord, open **User Settings → Advanced**, enable **Developer Mode**, right-click your server icon, and choose **Copy Server ID**. Stop Mookie, open `.env`, paste that number after `DISCORD_GUILD_ID=`, save, and restart.
+
+If you're still stuck, tell the owner **which step you reached** and send the error text. Do not send your `.env` file, bot token, or API keys.
+
+## A few things to know
+
+- Mookie is a Discord bot, not a separate music-player window on your computer.
+- Closing its command window or shutting down the computer takes it offline.
+- Spotify and Apple Music subscription streaming aren't supported.
+- Searches play the first YouTube match. Paste a specific link when you want a particular version.
+- Song queues disappear when the bot restarts.
+- This guide has not been verified on a fresh installation of every operating system.
+
+For optional voice tags, Linux setup, developer tests, and more details, see [the extra guide](docs/TECHNICAL.md).
