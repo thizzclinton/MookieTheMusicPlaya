@@ -1,92 +1,166 @@
-# Discord Upload Player
+# Mookie The Music Playa
 
-Play uploaded audio, music URLs, and song searches in a server voice channel.
+A self-hosted Discord music bot. Play uploaded audio, supported music links, or song searches in your server's voice channels. Optional Fish Audio integration generates downloadable voice tags.
 
-1. Join a voice channel.
-2. Right-click a message containing your uploaded song → **Apps → Play attachment** (on mobile, long-press the message).
-3. The bot joins you and plays it. More selections join the queue.
+Installing this project runs your own copy of Mookie using your own Discord bot account. It does not give you access to the owner's bot token. Your computer must stay on and the bot process must remain running.
 
-You can also use `/play` with either **query** or **file**:
+## Before you start
 
-- `/play query: Daft Punk One More Time` — plays the first YouTube search result.
-- `/play query: https://www.youtube.com/watch?v=...` — plays the linked track.
-- `/play query: https://soundcloud.com/artist/track` — plays a supported public SoundCloud track.
-- `/play file:` — upload your own audio.
+- Access to this private GitHub repository: the owner must invite you as a collaborator and you must accept.
+- A Discord account and a server where you can install apps.
+- Python 3.11 or newer, Git, FFmpeg, and Deno 2.3 or newer.
+- Your own Discord bot token, created below.
 
-Choose one input per command. Uploaded files and online tracks use the same queue and controls.
+FFmpeg decodes audio; Deno supports YouTube's JavaScript challenges. See the [yt-dlp runtime guide](https://github.com/yt-dlp/yt-dlp/wiki/EJS).
 
-## Updating your existing bot
+## 1. Download Mookie
 
-On this Mac, `.venv` points to the local runtime at
-`/Users/theozarrinkelk/Library/Application Support/Mookie/runtime`.
-This keeps music libraries outside iCloud-managed Documents, where offloaded files
-were causing song lookups to hang. The previous environment is preserved as
-`.venv-icloud-backup-20261003`. Your usual startup command still works:
+Open Terminal (Mac/Linux) or PowerShell (Windows). Navigate to a local folder where you keep projects, then run:
+
+```sh
+git clone https://github.com/thizzclinton/MookieTheMusicPlaya.git
+cd MookieTheMusicPlaya
+```
+
+For this private repository, use authenticated Git. If you have GitHub CLI installed, run `gh auth login` and `gh auth setup-git` first. Alternatively, use GitHub Desktop to clone it. A GitHub account password will not authenticate an HTTPS Git clone.
+
+Keep the project in a local, non-cloud-synced folder to avoid dependencies being offloaded.
+
+## 2. Install system requirements
+
+### macOS
+
+Install [Homebrew](https://brew.sh/) if you do not have it, then run:
+
+```sh
+brew install python ffmpeg deno git
+python3 --version
+ffmpeg -version
+deno --version
+```
+
+### Windows
+
+Install Python 3.11 or newer from [python.org](https://www.python.org/downloads/windows/) (enable its PATH option), [Git](https://git-scm.com/downloads), [FFmpeg](https://ffmpeg.org/download.html), and [Deno](https://docs.deno.com/runtime/getting_started/installation/). Ensure FFmpeg and Deno are on your PATH. Reopen PowerShell and check:
+
+```powershell
+py -3 --version
+git --version
+ffmpeg -version
+deno --version
+```
+
+### Linux (Debian/Ubuntu)
+
+```sh
+sudo apt update
+sudo apt install python3 python3-venv python3-pip ffmpeg git
+```
+
+Install Deno using its [official installation instructions](https://docs.deno.com/runtime/getting_started/installation/). Check `python3 --version` is at least 3.11, and check `ffmpeg -version` and `deno --version`.
+
+## 3. Install Python dependencies
+
+Run these commands from inside `MookieTheMusicPlaya`.
+
+**Mac/Linux:**
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r requirements.txt
+cp .env.example .env
+```
+
+**Windows PowerShell:**
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+These commands use the virtual environment directly; no activation or PowerShell execution-policy changes are necessary. Copy the environment example only during first-time setup so you don't overwrite existing credentials.
+
+## 4. Create and invite your Discord bot
+
+1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Create a new application named Mookie (or any name you prefer).
+3. Open **Bot**, generate/reset its token, and save it privately. Leave privileged intents off; this bot uses slash commands and explicitly selected messages.
+4. Under **OAuth2 → URL Generator**, select **bot** and **applications.commands**.
+5. Select **View Channels**, **Send Messages**, **Read Message History**, **Connect**, and **Speak**. Administrator permission is unnecessary.
+6. Open the generated installation URL and choose your server. Make sure channel overrides also allow Connect and Speak.
+7. Optionally enable **Developer Mode** in Discord's advanced settings, right-click your server, and copy its ID for quicker command registration in that server.
+
+Discord's [bot setup guide](https://docs.discord.com/developers/quick-start/getting-started) provides additional portal guidance.
+
+## 5. Configure your local token
+
+Open the `.env` file in a text editor. On Mac you can use `open -e .env`; on Windows use `notepad .env`.
+
+```dotenv
+DISCORD_TOKEN=your_own_bot_token
+DISCORD_GUILD_ID=
+```
+
+Put the optional server ID after `DISCORD_GUILD_ID=`. Save the file. Never share your token or commit `.env` to Git; it is ignored by this repository. If a token is exposed, reset it in the Developer Portal and update your local file.
+
+## 6. Start and verify
+
+**Mac/Linux:**
+
+```sh
+.venv/bin/python bot.py
+```
+
+**Windows PowerShell:**
+
+```powershell
+.\.venv\Scripts\python.exe bot.py
+```
+
+Wait for the `Logged in as ... Commands are ready.` message. Keep this terminal open. On Mac, you can prevent idle sleep while running with:
 
 ```sh
 caffeinate -i .venv/bin/python bot.py
 ```
 
-The code in this folder has already been updated. Your `.env` stays the same. Stop the running process with **Control+C**, then, with the virtual environment active:
+Then check real playback:
+
+1. Join a regular Discord voice channel.
+2. Use `/play file:` and upload a small MP3.
+3. Confirm Mookie joins and you can hear it.
+4. Try `/pause`, `/resume`, and `/stop`.
+5. Try `/play query:` with a song title or a specific YouTube URL.
+
+You can also right-click an uploaded audio message and choose **Apps → Play attachment** (long-press on mobile).
+
+Press Ctrl+C in the terminal to stop. To start next time, enter the project folder and run the same start command. Don't run two copies with the same token. For continuous availability, use an always-on computer or server; this repository does not set up hosting automatically.
+
+## Updating
+
+Stop Mookie with Ctrl+C, then run these commands inside the project folder:
 
 ```sh
-python -m pip install --upgrade -r requirements.txt
-brew install deno
-python bot.py
+git pull --ff-only
 ```
 
-Deno is needed for current YouTube support. Skip its installation if already installed. On this Mac, Deno was found during setup. The bot registers the new `/play` options at startup; if Discord shows the old command, reopen Discord after restarting the bot.
-
-
-## First-time setup on your Mac
-
-### 1. Create and invite the bot
-
-- Open https://discord.com/developers/applications and choose **New Application**. Name it **Upload Player**.
-- On the **Bot** page, generate/reset the bot token. Save it privately for step 3. Never paste it into chat or commit it to Git.
-- Leave privileged intents off. This bot uses slash commands and explicitly selected messages.
-- Under **OAuth2 → URL Generator**, select scopes **bot** and **applications.commands**.
-- Select permissions **View Channels**, **Send Messages**, **Read Message History**, **Connect**, and **Speak**. Administrator permission is unnecessary.
-- Open the generated URL and install it in a server you manage. Channel permission overrides must also allow the bot to connect and speak.
-- Optional: in Discord enable **User Settings → Advanced → Developer Mode**, right-click your server, and **Copy Server ID**. Putting this ID in `.env` registers commands immediately in that server; commands are also registered globally for any other server that installs the bot.
-
-### 2. Install requirements
-
-Use Python 3.11 or newer, FFmpeg, and Deno 2.3 or newer. With Homebrew installed:
+Mac/Linux:
 
 ```sh
-brew install python ffmpeg deno
+.venv/bin/python -m pip install --upgrade -r requirements.txt
+.venv/bin/python bot.py
 ```
 
-Open Terminal in this downloaded project folder, then run:
+Windows PowerShell:
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-cp .env.example .env
+```powershell
+.\.venv\Scripts\python.exe -m pip install --upgrade -r requirements.txt
+.\.venv\Scripts\python.exe bot.py
 ```
 
-On Windows, activate with `.venv\Scripts\activate` and install FFmpeg on your PATH. On Debian/Ubuntu, install `python3-venv` and `ffmpeg` using your package manager.
-
-### 3. Add your token locally
-
-Open `.env` in a text editor:
-
-```dotenv
-DISCORD_TOKEN=your_actual_bot_token
-DISCORD_GUILD_ID=your_server_id
-```
-
-The server ID is optional. Commands register globally for all servers that install the bot and may take time to appear. If set, the ID also gives that server an immediately updated copy of the commands.
-
-### 4. Start
-
-```sh
-python bot.py
-```
-
-Keep Terminal running and your computer awake. Press Ctrl+C to stop the bot. For continuous availability, run this folder on an always-on computer or server with Python, FFmpeg, and outbound Discord voice connectivity.
+Your `.env` remains local. If you made code changes, save or commit them before pulling updates.
 
 ## Commands
 
@@ -126,7 +200,7 @@ Anyone in the bot's voice channel can control it. Each server has an independent
 - Selected-message content exception: https://github.com/discord/discord-api-docs/blob/main/developers/events/gateway.mdx
 - Expiring attachment URLs: https://github.com/discord/discord-api-docs/blob/main/developers/reference.mdx
 
-Live server playback requires your own token and server. Local checks cannot verify Discord permissions or hear the resulting voice stream.
+Live server playback requires your own bot token and server. Local tests cannot verify Discord permissions or hear the resulting voice stream.
 
 ## Local verification
 
@@ -134,17 +208,23 @@ Runtime logs are written to `logs/mookie.log` and rotated automatically. Logging
 on a background thread so a slow terminal cannot block Discord's heartbeat or slash commands.
 To see connection and playback details, run `tail -f logs/mookie.log` in another terminal.
 
-With the virtual environment activated, run:
+Mac/Linux:
 
 ```sh
-python -m unittest -v test_bot.py test_fish_tts.py test_runtime.py
+.venv/bin/python -m unittest -v test_bot.py test_fish_tts.py test_runtime.py
 ```
 
-Offline tests cover command registration, FFmpeg Opus output, queue advancement, cleanup, mixed online/upload playback, cancellation during lookup, input validation, and subprocess cancellation. Local audio conversion and live HTTP audio/YouTube-search decoding passed during development. Delivery through an actual Discord voice session still needs testing after restart.
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest -v test_bot.py test_fish_tts.py test_runtime.py
+```
+
+Offline tests cover command registration, FFmpeg Opus output, queue advancement, cleanup, mixed online/upload playback, cancellation during lookup, input validation, and subprocess cancellation. A new installation still needs the live playback check described above. These tests do not prove playback on every operating system or network.
 
 ## Fish Audio voice tags
 Set `FISH_API_KEY` and `FISH_VOICE_ID` in `.env`, then restart the bot.
 Use `/tag text: Thizz Clinton. Turn the bass up.` to receive a private downloadable MP3.
 No voice-channel connection is required. Limit: 500 characters, one request per user per server every 30 seconds.
-The default model is `s2.1-pro-free`; optionally set `FISH_TTS_MODEL` to another supported Fish model. Paid models can incur usage charges.
+The default model is `s2.1-pro-free`; optionally set `FISH_TTS_MODEL` to another supported Fish model. Provider access and pricing can change; check your Fish Audio account before using this feature.
 This does not implement Spotify support. Credentials alone do not enable it.
